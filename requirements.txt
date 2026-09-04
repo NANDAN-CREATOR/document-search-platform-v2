@@ -3,14 +3,14 @@ fastapi==0.115.0
 uvicorn>=0.31.1
 pydantic>=2.11.9
 pydantic-settings>=2.10.1
-python-dotenv==1.0.1
+python-dotenv>=1.1.1
 python-multipart==0.0.12
 
 # Document Processing -- Docling (full OCR + tables on Linux)
 docling==2.5.0
 pypdf>=4.0.0
 
-# RAG & Vector Store -- LlamaIndex (latest versions compatible with ollama>=0.5.3)
+# RAG & Vector Store -- LlamaIndex
 llama-index-llms-ollama>=0.4.0
 llama-index-embeddings-ollama>=0.4.0
 llama-index-vector-stores-postgres>=0.2.0
@@ -22,7 +22,6 @@ sqlalchemy==2.0.35
 asyncpg>=0.29.0
 
 # Multi-Agent -- CrewAI v1.0
-# BaseTool is now in crewai.tools, no separate crewai-tools needed
 crewai==1.0.0
 
 # Tracing -- Arize Phoenix (full UI)
