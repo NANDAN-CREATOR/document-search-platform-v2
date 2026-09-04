@@ -1,40 +1,45 @@
 """
-CrewAI multi-agent configuration.
-Implements Retriever -> Reasoner -> Validator using CrewAI agents and tasks.
+CrewAI multi-agent RAG pipeline.
+Runs in its own container — NO LlamaIndex imports.
+RetrieverAgent calls the RAG API container over HTTP.
+ReasonerAgent and ValidatorAgent call Ollama directly.
 """
+import os
 import logging
+import requests
 from crewai import Agent, Task, Crew, Process
 from crewai.tools import BaseTool
-from pydantic import BaseModel
-from typing import Any, Type
-
-from ingestion.pgvector_indexer import PGVectorIndexer
-from config.settings import settings
 
 logger = logging.getLogger(__name__)
+
+RAG_API_URL = os.getenv("RAG_API_URL", "http://api:8000")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.2:3b")
 
 
 class DocumentRetrievalTool(BaseTool):
     name: str = "DocumentRetrievalTool"
     description: str = (
-        "Retrieves the most relevant document chunks from the vector database "
-        "based on semantic similarity to the input query."
+        "Retrieves the most relevant document chunks from the knowledge base "
+        "for a given query using semantic vector search."
     )
 
     def _run(self, query: str) -> str:
         try:
-            indexer = PGVectorIndexer()
-            retriever = indexer.get_retriever(similarity_top_k=5)
-            nodes = retriever.retrieve(query)
-            if not nodes:
-                return "No relevant documents found."
-            parts = []
-            for i, node in enumerate(nodes, 1):
-                source = node.metadata.get("filename", "Unknown")
-                score = getattr(node, "score", 0.0)
-                parts.append(f"[Source {i}: {source} | Score: {score:.3f}]\n{node.get_content()}")
-            return "\n\n---\n\n".join(parts)
+            resp = requests.post(
+                f"{RAG_API_URL}/api/v1/search",
+                json={"query": query, "top_k": 5},
+                timeout=30,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            answer = data.get("answer", "")
+            sources = data.get("sources", [])
+            sources_text = "\n".join(
+                [f"- {s.get('filename','?')} (score: {s.get('score',0):.3f})" for s in sources]
+            )
+            return f"{answer}\n\nSources:\n{sources_text}" if sources_text else answer
         except Exception as e:
+            logger.error(f"DocumentRetrievalTool failed: {e}")
             return f"Retrieval failed: {e}"
 
 
@@ -42,11 +47,11 @@ def build_retriever_agent() -> Agent:
     return Agent(
         role="Document Retriever",
         goal="Find the most relevant document chunks from the knowledge base",
-        backstory="Specialist in semantic search and document retrieval.",
+        backstory="Specialist in semantic search using vector similarity.",
         tools=[DocumentRetrievalTool()],
         verbose=True,
         allow_delegation=False,
-        llm=f"ollama/{settings.ollama_model}",
+        llm=f"ollama/{OLLAMA_MODEL}",
     )
 
 
@@ -54,10 +59,10 @@ def build_reasoner_agent() -> Agent:
     return Agent(
         role="Answer Reasoner",
         goal="Generate accurate answers using only provided document context",
-        backstory="Expert at synthesising document information. Never makes up information.",
+        backstory="Expert at synthesising documents. Never makes up information.",
         verbose=True,
         allow_delegation=False,
-        llm=f"ollama/{settings.ollama_model}",
+        llm=f"ollama/{OLLAMA_MODEL}",
     )
 
 
@@ -65,16 +70,14 @@ def build_validator_agent() -> Agent:
     return Agent(
         role="Answer Validator",
         goal="Validate answers are grounded and free of hallucinations",
-        backstory="Quality assurance expert who checks accuracy and groundedness.",
+        backstory="Quality assurance expert who checks accuracy.",
         verbose=True,
         allow_delegation=False,
-        llm=f"ollama/{settings.ollama_model}",
+        llm=f"ollama/{OLLAMA_MODEL}",
     )
 
 
 class CrewAIRAGPipeline:
-    """Full CrewAI implementation of the 3-agent RAG pipeline."""
-
     def __init__(self):
         self.retriever_agent = build_retriever_agent()
         self.reasoner_agent = build_reasoner_agent()
@@ -94,7 +97,7 @@ class CrewAIRAGPipeline:
             agent=self.reasoner_agent,
         )
         validation_task = Task(
-            description=f"Validate the answer for: {query}\nCheck groundedness and hallucinations.",
+            description=f"Validate answer for: {query}\nCheck groundedness and hallucinations.",
             expected_output="Validation report",
             agent=self.validator_agent,
         )
@@ -105,10 +108,4 @@ class CrewAIRAGPipeline:
             verbose=True,
         )
         result = crew.kickoff(inputs={"query": query})
-        return {
-            "query": query,
-            "answer": str(result),
-            "validation": "Validated by CrewAI ValidatorAgent",
-            "sources": [],
-            "chunks_retrieved": 0,
-        }
+        return {"query": query, "answer": str(result), "validation": "Validated by CrewAI", "sources": []}
