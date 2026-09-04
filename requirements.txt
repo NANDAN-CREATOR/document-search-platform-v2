@@ -23,9 +23,8 @@ pgvector==0.2.5
 sqlalchemy==2.0.35
 asyncpg>=0.29.0
 
-# Multi-Agent — CrewAI with tools
-crewai==0.67.1
-crewai-tools==0.4.26
+# Multi-Agent — CrewAI (latest - lancedb is optional in 1.14+)
+crewai>=1.0.0
 
 # Tracing — Arize Phoenix (full)
 arize-phoenix==4.29.0
