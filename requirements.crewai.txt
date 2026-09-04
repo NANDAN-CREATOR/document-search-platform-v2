@@ -1,0 +1,8 @@
+# CrewAI standalone container -- no LlamaIndex conflict
+crewai==1.0.0
+fastapi==0.115.0
+uvicorn>=0.31.1
+pydantic>=2.11.9
+python-dotenv>=1.1.1
+requests>=2.31.0
+pyyaml==6.0.2
