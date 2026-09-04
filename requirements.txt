@@ -1,18 +1,16 @@
 # Core API
 fastapi==0.115.0
-uvicorn==0.30.6
+uvicorn>=0.31.1
 pydantic>=2.11.9
 pydantic-settings>=2.10.1
 python-dotenv==1.0.1
 python-multipart==0.0.12
 
-# Document Processing -- Docling (full, runs on Linux)
+# Document Processing -- Docling (full OCR + tables on Linux)
 docling==2.5.0
 pypdf>=4.0.0
 
-# RAG & Vector Store -- LlamaIndex
-# Use latest llama-index Ollama integrations which use ollama>=0.4.x (supports httpx>=0.28)
-llama-index-core==0.12.5
+# RAG & Vector Store -- LlamaIndex (latest versions compatible with ollama>=0.5.3)
 llama-index-llms-ollama>=0.4.0
 llama-index-embeddings-ollama>=0.4.0
 llama-index-vector-stores-postgres>=0.2.0
@@ -24,15 +22,13 @@ sqlalchemy==2.0.35
 asyncpg>=0.29.0
 
 # Multi-Agent -- CrewAI v1.0
+# BaseTool is now in crewai.tools, no separate crewai-tools needed
 crewai==1.0.0
 
-# Tracing -- Arize Phoenix (full)
+# Tracing -- Arize Phoenix (full UI)
 arize-phoenix==4.29.0
 arize-phoenix-otel
-opentelemetry-api>=1.30.0
-)entelemetry-sdk>=1.30.0
-opentelemetry-exporter-otlp-proto-grpc>=1.30.0
-)eninference-instrumentation-llama-index==2.2.4
+openinference-instrumentation-llama-index==2.2.4
 
 # Evaluation -- RAGAs
 ragas==0.1.21
