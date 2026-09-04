@@ -23,15 +23,15 @@ pgvector==0.2.5
 sqlalchemy==2.0.35
 asyncpg>=0.29.0
 
-# Multi-Agent — CrewAI (latest - lancedb is optional in 1.14+)
+# Multi-Agent — CrewAI v1.x (no separate crewai-tools needed)
 crewai>=1.0.0
 
-# Tracing — Arize Phoenix (full)
+# Tracing — Arize Phoenix (let pip resolve opentelemetry versions)
 arize-phoenix==4.29.0
-arize-phoenix-otel==0.6.1
-opentelemetry-api==1.27.0
-opentelemetry-sdk==1.27.0
-opentelemetry-exporter-otlp-proto-grpc==1.27.0
+arize-phoenix-otel
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-exporter-otlp-proto-grpc
 openinference-instrumentation-llama-index==2.2.4
 
 # Evaluation — RAGAs
