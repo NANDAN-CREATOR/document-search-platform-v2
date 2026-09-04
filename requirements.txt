@@ -23,8 +23,9 @@ pgvector==0.2.5
 sqlalchemy==2.0.35
 asyncpg>=0.29.0
 
-# Multi-Agent — CrewAI (no crewai-tools -- custom DocumentRetrievalTool in crew_config.py)
+# Multi-Agent — CrewAI with tools
 crewai==0.67.1
+crewai-tools==0.4.26
 
 # Tracing — Arize Phoenix (full)
 arize-phoenix==4.29.0
