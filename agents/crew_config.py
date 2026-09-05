@@ -1,19 +1,28 @@
 """
 CrewAI multi-agent RAG pipeline.
-Runs in its own container — NO LlamaIndex imports.
+Runs in its own container -- NO LlamaIndex imports.
 RetrieverAgent calls the RAG API container over HTTP.
 ReasonerAgent and ValidatorAgent call Ollama directly.
 """
 import os
 import logging
 import requests
-from crewai import Agent, Task, Crew, Process
+from crewai import Agent, Task, Crew, Process, LLM
 from crewai.tools import BaseTool
 
 logger = logging.getLogger(__name__)
 
 RAG_API_URL = os.getenv("RAG_API_URL", "http://api:8000")
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.2:3b")
+
+
+def get_llm() -> LLM:
+    """Create CrewAI LLM instance pointing to Ollama."""
+    return LLM(
+        model=f"ollama/{OLLAMA_MODEL}",
+        base_url=OLLAMA_BASE_URL,
+    )
 
 
 class DocumentRetrievalTool(BaseTool):
@@ -35,7 +44,7 @@ class DocumentRetrievalTool(BaseTool):
             answer = data.get("answer", "")
             sources = data.get("sources", [])
             sources_text = "\n".join(
-                [f"- {s.get('filename','?')} (score: {s.get('score',0):.3f})" for s in sources]
+                [f"- {s.get('filename', '?')} (score: {s.get('score', 0):.3f})" for s in sources]
             )
             return f"{answer}\n\nSources:\n{sources_text}" if sources_text else answer
         except Exception as e:
@@ -51,7 +60,7 @@ def build_retriever_agent() -> Agent:
         tools=[DocumentRetrievalTool()],
         verbose=True,
         allow_delegation=False,
-        llm=f"ollama/{OLLAMA_MODEL}",
+        llm=get_llm(),
     )
 
 
@@ -62,7 +71,7 @@ def build_reasoner_agent() -> Agent:
         backstory="Expert at synthesising documents. Never makes up information.",
         verbose=True,
         allow_delegation=False,
-        llm=f"ollama/{OLLAMA_MODEL}",
+        llm=get_llm(),
     )
 
 
@@ -73,7 +82,7 @@ def build_validator_agent() -> Agent:
         backstory="Quality assurance expert who checks accuracy.",
         verbose=True,
         allow_delegation=False,
-        llm=f"ollama/{OLLAMA_MODEL}",
+        llm=get_llm(),
     )
 
 
