@@ -1,0 +1,99 @@
+openapi: 3.0.0
+info:
+  title: Document Search Platform v2 API
+  description: Agentic RAG backend API with Docling, LlamaIndex, CrewAI, Arize Phoenix and RAGAs
+  version: 2.0.0
+servers:
+  - url: http://localhost:8000
+    description: RAG API server
+  - url: http://localhost:8001
+    description: CrewAI Agent server
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: Service is healthy
+
+  /health/dependencies:
+    get:
+      summary: Check all dependency health
+      responses:
+        '200':
+          description: Dependency statuses
+
+  /api/v1/search:
+    post:
+      summary: Search documents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                  example: What is RAG architecture?
+                top_k:
+                  type: integer
+                  default: 5
+      responses:
+        '200':
+          description: Search results with answer and sources
+
+  /api/v1/ingest:
+    post:
+      summary: Trigger document ingestion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data_dir:
+                  type: string
+                  example: ./data
+      responses:
+        '202':
+          description: Ingestion started in background
+
+  /api/v1/ingest/status:
+    get:
+      summary: Get ingestion status
+      responses:
+        '200':
+          description: Current ingestion state and result
+
+  /api/v1/models:
+    get:
+      summary: List available models (OpenAI compatible)
+      responses:
+        '200':
+          description: Model list
+
+  /api/v1/chat/completions:
+    post:
+      summary: OpenAI-compatible chat endpoint (CrewAI agent)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                messages:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      role:
+                        type: string
+                      content:
+                        type: string
+      responses:
+        '200':
+          description: CrewAI agent response in OpenAI format
