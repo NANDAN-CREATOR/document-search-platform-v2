@@ -26,8 +26,10 @@ def instrument_llamaindex() -> None:
         trace.set_tracer_provider(provider)
         LlamaIndexInstrumentor().instrument(tracer_provider=provider)
         logger.info(f"Arize Phoenix tracing enabled → http://{settings.phoenix_host}:{settings.phoenix_port}")
-    except Exception as e:
-        logger.warning(f"Phoenix tracing unavailable: {e}")
+    # except Exception as e:
+    #     logger.warning(f"Phoenix tracing unavailable: {e}")
+    except Exception:
+     logger.exception("Phoenix tracing unavailable")
 
 
 def instrument_all() -> None:
