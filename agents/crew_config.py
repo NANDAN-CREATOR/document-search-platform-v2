@@ -19,10 +19,11 @@ from crewai import Agent, Task, Crew, Process, LLM
 
 logger = logging.getLogger(__name__)
 
-# Module-level LLM instance
+# Module-level LLM instance with increased timeout for slow validator
 OLLAMA_LLM = LLM(
     model=f"ollama/{OLLAMA_MODEL}",
     base_url=OLLAMA_BASE_URL,
+    timeout=300,
 )
 
 
@@ -55,7 +56,7 @@ def _retrieve_from_api(query: str) -> str:
 class CrewAIRAGPipeline:
     """
     3-agent RAG pipeline without tool calling.
-    Retriever calls FastAPI dyirectly in Python.
+    Retriever calls FastAPI directly in Python.
     Reasoner and Validator use Ollama LLM via CrewAI.
     """
 
