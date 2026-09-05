@@ -22,8 +22,7 @@ logger = logging.getLogger(__name__)
 # Module-level LLM instance with increased timeout for slow validator
 OLLAMA_LLM = LLM(
     model=f"ollama/{OLLAMA_MODEL}",
-    base_url=OLLAMA_BASE_URL,
-    timeout=300,
+    base_url=OLLAMA_BASE_URL
 )
 
 
