@@ -1,5 +1,6 @@
 # CrewAI standalone container -- no LlamaIndex conflict
 crewai==1.0.0
+litellm
 fastapi==0.115.0
 uvicorn>=0.31.1
 pydantic>=2.11.9
