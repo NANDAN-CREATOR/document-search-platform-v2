@@ -6,6 +6,8 @@ RetrieverAgent calls the RAG API container over HTTP.
 import os
 import logging
 import requests
+from typing import Type
+from pydantic import BaseModel, Field
 
 RAG_API_URL = os.getenv("RAG_API_URL", "http://api:8000")
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
@@ -23,15 +25,17 @@ OLLAMA_LLM = LLM(
 )
 
 
+# Explicit args schema required by CrewAI 1.0
+class DocumentRetrievalSchema(BaseModel):
+    query: str = Field(..., description="The search query to find relevant document chunks.")
+
+
 class DocumentRetrievalTool(BaseTool):
     name: str = "DocumentRetrievalTool"
     description: str = "Retrieves relevant document chunks from the knowledge base for a given query string."
+    args_schema: Type[BaseModel] = DocumentRetrievalSchema
 
-    def _run(self, query) -> str:
-        # Handle case where crewai passes query as dict instead of string
-        if isinstance(query, dict):
-            query = query.get("description", query.get("query", str(query)))
-        query = str(query)
+    def _run(self, query: str) -> str:
         try:
             resp = requests.post(
                 f"{RAG_API_URL}/api/v1/search",
