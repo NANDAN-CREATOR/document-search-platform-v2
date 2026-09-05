@@ -4,17 +4,22 @@ CrewAI multi-agent RAG pipeline.
 import os
 import logging
 import requests
-from crewai import Agent, Task, Crew, Process, LLM
-from crewai.tools import BaseTool
-
-logger = logging.getLogger(__name__)
 
 RAG_API_URL = os.getenv("RAG_API_URL", "http://api:8000")
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.2:3b")
 
-# Set litellm environment variable so CrewAI/litellm picks up Ollama URL
+# Set litellm Ollama base URL before importing crewai
 os.environ["OLLAMA_API_BASE"] = OLLAMA_BASE_URL
+os.environ["OLLAMA_BASE_URL"] = OLLAMA_BASE_URL
+
+import litellm
+litellm.ollama_api_base = OLLAMA_BASE_URL
+
+from crewai import Agent, Task, Crew, Process, LLM
+from crewai.tools import BaseTool
+
+logger = logging.getLogger(__name__)
 
 
 def get_llm() -> LLM:
