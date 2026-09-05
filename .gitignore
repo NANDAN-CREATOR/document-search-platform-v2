@@ -17,7 +17,7 @@ build/
 data/*.pdf
 
 # Reports
-evaluation/ragas_report.json
+#evaluation/ragas_report.json
 
 # Docker
 .docker/
