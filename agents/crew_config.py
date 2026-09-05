@@ -1,5 +1,7 @@
 """
 CrewAI multi-agent RAG pipeline.
+Runs in its own container -- NO LlamaIndex imports.
+RetrieverAgent calls the RAG API container over HTTP.
 """
 import os
 import logging
@@ -9,25 +11,16 @@ RAG_API_URL = os.getenv("RAG_API_URL", "http://api:8000")
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.2:3b")
 
-# Set litellm Ollama base URL before importing crewai
-os.environ["OLLAMA_API_BASE"] = OLLAMA_BASE_URL
-os.environ["OLLAMA_BASE_URL"] = OLLAMA_BASE_URL
-
-import litellm
-litellm.ollama_api_base = OLLAMA_BASE_URL
-
 from crewai import Agent, Task, Crew, Process, LLM
 from crewai.tools import BaseTool
 
 logger = logging.getLogger(__name__)
 
-
-def get_llm() -> LLM:
-    return LLM(
-        model=f"ollama/{OLLAMA_MODEL}",
-        base_url=OLLAMA_BASE_URL,
-        api_base=OLLAMA_BASE_URL,
-    )
+# Module-level LLM instance with explicit base_url
+OLLAMA_LLM = LLM(
+    model=f"ollama/{OLLAMA_MODEL}",
+    base_url=OLLAMA_BASE_URL,
+)
 
 
 class DocumentRetrievalTool(BaseTool):
@@ -45,7 +38,9 @@ class DocumentRetrievalTool(BaseTool):
             data = resp.json()
             answer = data.get("answer", "")
             sources = data.get("sources", [])
-            sources_text = "\n".join([f"- {s.get('filename', '?')} (score: {s.get('score', 0):.3f})" for s in sources])
+            sources_text = "\n".join(
+                [f"- {s.get('filename', '?')} (score: {s.get('score', 0):.3f})" for s in sources]
+            )
             return f"{answer}\n\nSources:\n{sources_text}" if sources_text else answer
         except Exception as e:
             logger.error(f"DocumentRetrievalTool failed: {e}")
@@ -55,12 +50,12 @@ class DocumentRetrievalTool(BaseTool):
 def build_retriever_agent() -> Agent:
     return Agent(
         role="Document Retriever",
-        goal="Find the most relevant document chunks",
-        backstory="Specialist in semantic search.",
+        goal="Find the most relevant document chunks from the knowledge base",
+        backstory="Specialist in semantic search using vector similarity.",
         tools=[DocumentRetrievalTool()],
         verbose=True,
         allow_delegation=False,
-        llm=get_llm(),
+        llm=OLLAMA_LLM,
     )
 
 
@@ -71,7 +66,7 @@ def build_reasoner_agent() -> Agent:
         backstory="Expert at synthesising documents. Never makes up information.",
         verbose=True,
         allow_delegation=False,
-        llm=get_llm(),
+        llm=OLLAMA_LLM,
     )
 
 
@@ -82,7 +77,7 @@ def build_validator_agent() -> Agent:
         backstory="Quality assurance expert who checks accuracy.",
         verbose=True,
         allow_delegation=False,
-        llm=get_llm(),
+        llm=OLLAMA_LLM,
     )
 
 
