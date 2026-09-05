@@ -25,9 +25,13 @@ OLLAMA_LLM = LLM(
 
 class DocumentRetrievalTool(BaseTool):
     name: str = "DocumentRetrievalTool"
-    description: str = "Retrieves relevant document chunks from the knowledge base for a given query."
+    description: str = "Retrieves relevant document chunks from the knowledge base for a given query string."
 
-    def _run(self, query: str) -> str:
+    def _run(self, query) -> str:
+        # Handle case where crewai passes query as dict instead of string
+        if isinstance(query, dict):
+            query = query.get("description", query.get("query", str(query)))
+        query = str(query)
         try:
             resp = requests.post(
                 f"{RAG_API_URL}/api/v1/search",
@@ -91,7 +95,7 @@ class CrewAIRAGPipeline:
     def run(self, query: str) -> dict:
         logger.info(f"CrewAI Pipeline running for: {query[:80]}")
         retrieval_task = Task(
-            description=f"Retrieve document chunks for: {query}",
+            description=f"Retrieve document chunks for this query: {query}",
             expected_output="Relevant document chunks with source citations",
             agent=self.retriever_agent,
         )
