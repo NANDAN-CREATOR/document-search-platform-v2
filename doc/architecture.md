@@ -10,7 +10,7 @@ Fully containerised Agentic RAG platform using a two-service microservices archi
 
 ```
 +-------------------------------------------------------------------+
-|                Docker Compose Stack                                 |
+|                Docker Compose Stack                                  |
 |                                                                      |
 |  +OpenWebUI+                                                         |
 |  |  :8080 |                                                          |
@@ -24,20 +24,20 @@ Fully containerised Agentic RAG platform using a two-service microservices archi
 |  +-------------+                           v HTTP POST               |
 |      | HTTP POST                    +-----------------+              |
 |      v /api/v1/search               | Ollama          |              |
-|  +RAG API+                          |   :11434        |              |
-|  |  :8000  |                        | llama3.2:3b     |              |
-|  | LlamaIndex|-------------------->| nomic-embed-text|              |
-|  | Docling  |                       +-----------------+              |
-|  | RAGAs    |                                                        |
-|  | Phoenix  |                       +-----------------+              |
-|  +----------+                       | PostgreSQL      |              |
-|      |                              |   :5432         |              |
-|      v---------------------------->| PGVector        |              |
+|        +RAG API+                    |   :11434        |              |
+|  |  :8000    |                      | llama3.2:3b     |              |
+|  | LlamaIndex|--------------------> | nomic-embed-text|              |
+|  | Docling   |                      +-----------------+              |
+|  | RAGAs     |                                                       |
+|  | Phoenix   |                       +-----------------+             |
+|  +----------+                       | PostgreSQL       |             |
+|      |                              |   :5432          |             |
+|      v----------------------------> | PGVector         |             |
 |                                     +-----------------+              |
 |                                                                      |
 |  +--------------------+                                              |
 |  | Arize Phoenix      |                                              |
-|  |   :6006 (UI)       |  <-- OTLP gRPC traces from RAG API          |
+|  |   :6006 (UI)       |  <-- OTLP gRPC traces from RAG API           |
 |  |   :4317 (gRPC)     |                                              |
 |  +--------------------+                                              |
 +-------------------------------------------------------------------+
@@ -87,12 +87,12 @@ User Question (OpenWebUI)
 CrewAI Agent Server (8001)
     |
     v Python HTTP POST
-+---------------------------------------+
-| RAG API (8000)                        |
+ +---------------------------------------+
+| RAG API (8000)                          |
 |  -- Nomic embed query -> PGVector search|
-|  -- Retrieve top-5 chunks              |
-|  -- Llama3.2:3b reasoning              |
-|  -- Validator agent                    |
+|  -- Retrieve top-5 chunks               |
+|  -- Llama3.2:3b reasoning               |
+|  -- Validator agent                     |
 +----------------------------------------+
     |
     v context + answer
