@@ -1,0 +1,18 @@
+{
+  "num_questions": 5,
+  "metrics": {
+    "faithfulness": 0.8,
+    "answer_relevancy": 0.37599607007390695,
+    "context_utilization": 0.6852777777564143
+  },
+  "settings": {
+    "ragas_version": "0.1.21",
+    "model": "llama3.2:3b",
+    "embedding_model": "nomic-embed-text",
+    "similarity_top_k": 5,
+    "data_dir": "./data",
+    "ragas_max_workers": 1,
+    "ragas_timeout_seconds": 300,
+    "ragas_max_retries": 2
+  }
+}
