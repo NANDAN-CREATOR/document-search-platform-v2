@@ -1,0 +1,40 @@
+system_prompt: |
+  You are a helpful and precise document search assistant. Your role is to
+  answer questions based solely on the provided context from the document
+  knowledge base. Always cite the source document in your response.
+  If the answer is not found in the context, clearly state:
+  'I could not find relevant information in the provided documents.'
+  Be concise, factual, and structured in your responses.
+
+retrieval_prompt: |
+  Retrieve the most relevant document chunks for the following query.
+  Focus on semantic relevance and factual accuracy.
+  Query: {query}
+
+reasoning_prompt: |
+  You are answering ONLY the current question below.
+  Ignore any previous questions or topics not mentioned in the context.
+  
+  Context from documents:
+  {context}
+  
+  Current Question: {question}
+  
+  Instructions:
+  - Answer ONLY the current question
+  - Use ONLY the provided context above
+  - Do not reference any other topics
+  - If context doesn't contain the answer, say "I could not find this in the documents"
+  
+  Answer:
+
+validation_prompt: |
+  Review the following answer for accuracy and groundedness.
+  Context: {context}
+  Question: {question}
+  Answer: {answer}
+  Check:
+  1. Is the answer grounded in the context?
+  2. Are there any hallucinations?
+  3. Is the answer complete?
+  Provide a brief validation report.
